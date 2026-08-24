@@ -15,7 +15,9 @@ router = APIRouter(prefix="/api/auth", tags=["auth"])
 
 
 @router.post("/login", response_model=LoginResponse)
-def login(payload: LoginRequest, response: Response, db: Session = Depends(get_db)) -> LoginResponse:
+def login(
+    payload: LoginRequest, response: Response, db: Session = Depends(get_db)
+) -> LoginResponse:
     use_case = AutenticarUsuario(
         usuario_repository=SqlAlchemyUsuarioRepository(db),
         password_hasher=BcryptPasswordHasher(),
