@@ -73,10 +73,11 @@ def test_criar_nome_duplicado_retorna_409(db_session, monkeypatch):
 def test_editar_id_inexistente_retorna_404(db_session, monkeypatch):
     _usar_db_session(monkeypatch, db_session)
     headers = _auth_headers()
+    nome = f"Supino Teste {uuid.uuid4().hex[:8]}"
 
     response = client.put(
         f"/api/exercicios/{uuid.uuid4()}",
-        json={"nome": "Supino", "tipo": "musculacao"},
+        json={"nome": nome, "tipo": "musculacao"},
         headers=headers,
     )
 
@@ -86,9 +87,21 @@ def test_editar_id_inexistente_retorna_404(db_session, monkeypatch):
 def test_criar_tipo_invalido_retorna_422(db_session, monkeypatch):
     _usar_db_session(monkeypatch, db_session)
     headers = _auth_headers()
+    nome = f"Supino Teste {uuid.uuid4().hex[:8]}"
 
     response = client.post(
-        "/api/exercicios", json={"nome": "Supino", "tipo": "invalido"}, headers=headers
+        "/api/exercicios", json={"nome": nome, "tipo": "invalido"}, headers=headers
+    )
+
+    assert response.status_code == 422
+
+
+def test_criar_nome_vazio_retorna_422(db_session, monkeypatch):
+    _usar_db_session(monkeypatch, db_session)
+    headers = _auth_headers()
+
+    response = client.post(
+        "/api/exercicios", json={"nome": "   ", "tipo": "musculacao"}, headers=headers
     )
 
     assert response.status_code == 422

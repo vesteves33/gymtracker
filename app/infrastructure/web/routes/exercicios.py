@@ -43,6 +43,8 @@ def criar(
         exercicio = use_case.executar(payload.nome, payload.tipo)
     except ExercicioNomeDuplicadoError as exc:
         raise HTTPException(status_code=409, detail="Nome ja cadastrado") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="Nome nao pode ser vazio") from exc
     db.commit()
     return ExercicioResponse(id=exercicio.id, nome=exercicio.nome, tipo=exercicio.tipo)
 
@@ -61,6 +63,8 @@ def editar(
         raise HTTPException(status_code=404, detail="Exercicio nao encontrado") from exc
     except ExercicioNomeDuplicadoError as exc:
         raise HTTPException(status_code=409, detail="Nome ja cadastrado") from exc
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail="Nome nao pode ser vazio") from exc
     db.commit()
     return ExercicioResponse(id=exercicio.id, nome=exercicio.nome, tipo=exercicio.tipo)
 

@@ -18,5 +18,5 @@ def get_current_user(
 
     try:
         return JwtTokenGenerator.decode(token)
-    except (jwt.PyJWTError, ValueError) as exc:
+    except (jwt.PyJWTError, ValueError, KeyError) as exc:
         raise HTTPException(status_code=401, detail="Token invalido") from exc

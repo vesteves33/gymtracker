@@ -46,7 +46,7 @@ def form_novo(
 @router.post("/novo")
 def criar_pagina(
     request: Request,
-    nome: str = Form(...),
+    nome: str = Form(..., max_length=100),
     tipo: TipoExercicio = Form(...),
     db: Session = Depends(get_db),
     _usuario_id: uuid.UUID = Depends(get_current_user),
@@ -60,6 +60,13 @@ def criar_pagina(
             "exercicios/form.html",
             {"exercicio": {"nome": nome, "tipo": tipo}, "erro": "Nome ja cadastrado"},
             status_code=409,
+        )
+    except ValueError:
+        return templates.TemplateResponse(
+            request,
+            "exercicios/form.html",
+            {"exercicio": {"nome": nome, "tipo": tipo}, "erro": "Nome nao pode ser vazio"},
+            status_code=422,
         )
     db.commit()
     return RedirectResponse(url="/exercicios", status_code=303)
@@ -84,7 +91,7 @@ def form_editar(
 def editar_pagina(
     request: Request,
     exercicio_id: uuid.UUID,
-    nome: str = Form(...),
+    nome: str = Form(..., max_length=100),
     tipo: TipoExercicio = Form(...),
     db: Session = Depends(get_db),
     _usuario_id: uuid.UUID = Depends(get_current_user),
@@ -103,6 +110,16 @@ def editar_pagina(
                 "erro": "Nome ja cadastrado",
             },
             status_code=409,
+        )
+    except ValueError:
+        return templates.TemplateResponse(
+            request,
+            "exercicios/form.html",
+            {
+                "exercicio": {"id": exercicio_id, "nome": nome, "tipo": tipo},
+                "erro": "Nome nao pode ser vazio",
+            },
+            status_code=422,
         )
     db.commit()
     return RedirectResponse(url="/exercicios", status_code=303)

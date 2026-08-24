@@ -1,5 +1,7 @@
 import uuid
+from datetime import datetime, timedelta, timezone
 
+import jwt as pyjwt
 import pytest
 from fastapi import HTTPException
 
@@ -39,5 +41,16 @@ def test_token_invalido_levanta_401(monkeypatch):
 
     with pytest.raises(HTTPException) as exc_info:
         get_current_user(access_token="token-invalido", authorization=None)
+
+    assert exc_info.value.status_code == 401
+
+
+def test_token_sem_sub_levanta_401(monkeypatch):
+    monkeypatch.setenv("JWT_SECRET", "test-secret")
+    payload = {"exp": datetime.now(timezone.utc) + timedelta(minutes=5)}
+    token = pyjwt.encode(payload, "test-secret", algorithm="HS256")
+
+    with pytest.raises(HTTPException) as exc_info:
+        get_current_user(access_token=token, authorization=None)
 
     assert exc_info.value.status_code == 401
