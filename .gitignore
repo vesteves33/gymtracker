@@ -216,3 +216,15 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Working docs (specs/planejamento de features, uso local, nao versionado)
+docs/*
+
+# PRD (decisao de versionar fica pra depois)
+.prd/
+
+# Garantir que codigo da app, testes, CI e CLAUDE.md sejam sempre versionados
+!app/
+!tests/
+!.github/
+!CLAUDE.md
