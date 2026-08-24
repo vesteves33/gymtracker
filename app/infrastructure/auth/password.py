@@ -8,4 +8,7 @@ class BcryptPasswordHasher(PasswordHasher):
         return bcrypt.hashpw(senha.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
 
     def verify(self, senha: str, senha_hash: str) -> bool:
-        return bcrypt.checkpw(senha.encode("utf-8"), senha_hash.encode("utf-8"))
+        try:
+            return bcrypt.checkpw(senha.encode("utf-8"), senha_hash.encode("utf-8"))
+        except ValueError:
+            return False

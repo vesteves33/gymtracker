@@ -35,3 +35,13 @@ def test_login_com_credenciais_invalidas_retorna_401(db_session, monkeypatch):
     response = client.post("/api/auth/login", json={"login": "inexistente", "senha": "x"})
 
     assert response.status_code == 401
+
+
+def test_login_com_senha_maior_que_72_caracteres_retorna_422(db_session, monkeypatch):
+    from app.infrastructure.web import deps
+
+    monkeypatch.setattr(deps, "SessionLocal", lambda: db_session)
+
+    response = client.post("/api/auth/login", json={"login": "vitor", "senha": "x" * 100})
+
+    assert response.status_code == 422
