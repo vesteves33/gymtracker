@@ -8,7 +8,7 @@ from sqlalchemy import engine_from_config, pool
 
 sys.path.append(str(Path(__file__).resolve().parents[4]))
 
-from app.infrastructure.db.models import UsuarioModel  # noqa: F401,E402
+from app.infrastructure.db.models import ExercicioModel, UsuarioModel  # noqa: F401,E402
 from app.infrastructure.db.session import Base  # noqa: E402
 
 # this is the Alembic Config object, which provides
