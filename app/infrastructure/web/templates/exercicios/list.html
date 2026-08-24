@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Exercicios</h1>
+<a href="/exercicios/novo">Novo exercicio</a>
+<table>
+    <thead>
+        <tr><th>Nome</th><th>Tipo</th><th></th></tr>
+    </thead>
+    <tbody>
+        {% for exercicio in exercicios %}
+        <tr>
+            <td>{{ exercicio.nome }}</td>
+            <td>{{ exercicio.tipo.value }}</td>
+            <td>
+                <a href="/exercicios/{{ exercicio.id }}/editar">Editar</a>
+                <form method="post" action="/exercicios/{{ exercicio.id }}/remover" style="display:inline">
+                    <button type="submit">Remover</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
