@@ -1,9 +1,4 @@
 {% extends "base.html" %}
-{% block nav %}
-<form method="post" action="/logout" style="display:inline">
-    <button type="submit">Sair</button>
-</form>
-{% endblock %}
 {% block content %}
 <h1>{% if exercicio %}Editar{% else %}Novo{% endif %} exercicio</h1>
 {% if erro %}<p style="color:red">{{ erro }}</p>{% endif %}

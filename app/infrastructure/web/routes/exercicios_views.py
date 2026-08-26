@@ -17,7 +17,7 @@ from app.domain.entities.exercicio import TipoExercicio
 from app.infrastructure.db.repositories.exercicio_repository import (
     SqlAlchemyExercicioRepository,
 )
-from app.infrastructure.web.current_user import get_current_user_view
+from app.infrastructure.web.current_user import get_current_user
 from app.infrastructure.web.deps import get_db
 from app.infrastructure.web.templates import templates
 
@@ -30,7 +30,7 @@ router = APIRouter(prefix="/exercicios")
 def listar_pagina(
     request: Request,
     db: Session = Depends(get_db),
-    _usuario_id: uuid.UUID = Depends(get_current_user_view),
+    _usuario_id: uuid.UUID = Depends(get_current_user),
 ):
     exercicios = ListarExercicios(SqlAlchemyExercicioRepository(db)).executar()
     return templates.TemplateResponse(request, "exercicios/list.html", {"exercicios": exercicios})
@@ -39,7 +39,7 @@ def listar_pagina(
 @router.get("/novo")
 def form_novo(
     request: Request,
-    _usuario_id: uuid.UUID = Depends(get_current_user_view),
+    _usuario_id: uuid.UUID = Depends(get_current_user),
 ):
     return templates.TemplateResponse(
         request, "exercicios/form.html", {"exercicio": None, "erro": None}
@@ -52,7 +52,7 @@ def criar_pagina(
     nome: str = Form(..., max_length=100),
     tipo: TipoExercicio = Form(...),
     db: Session = Depends(get_db),
-    _usuario_id: uuid.UUID = Depends(get_current_user_view),
+    _usuario_id: uuid.UUID = Depends(get_current_user),
 ):
     use_case = CriarExercicio(SqlAlchemyExercicioRepository(db))
     try:
@@ -81,7 +81,7 @@ def form_editar(
     request: Request,
     exercicio_id: uuid.UUID,
     db: Session = Depends(get_db),
-    _usuario_id: uuid.UUID = Depends(get_current_user_view),
+    _usuario_id: uuid.UUID = Depends(get_current_user),
 ):
     exercicio = SqlAlchemyExercicioRepository(db).get_by_id(exercicio_id)
     if exercicio is None:
@@ -98,7 +98,7 @@ def editar_pagina(
     nome: str = Form(..., max_length=100),
     tipo: TipoExercicio = Form(...),
     db: Session = Depends(get_db),
-    _usuario_id: uuid.UUID = Depends(get_current_user_view),
+    _usuario_id: uuid.UUID = Depends(get_current_user),
 ):
     use_case = EditarExercicio(SqlAlchemyExercicioRepository(db))
     try:
@@ -134,7 +134,7 @@ def editar_pagina(
 def remover_pagina(
     exercicio_id: uuid.UUID,
     db: Session = Depends(get_db),
-    _usuario_id: uuid.UUID = Depends(get_current_user_view),
+    _usuario_id: uuid.UUID = Depends(get_current_user),
 ):
     try:
         RemoverExercicio(SqlAlchemyExercicioRepository(db)).executar(exercicio_id)
