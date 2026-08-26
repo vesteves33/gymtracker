@@ -2,7 +2,7 @@ from pathlib import Path
 
 import pytest
 
-from app.infrastructure.db.migrations.env import find_project_root
+from app.infrastructure.db.migrations.paths import find_project_root
 
 
 def test_encontra_raiz_a_partir_de_arquivo_profundo():

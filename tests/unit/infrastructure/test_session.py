@@ -1,5 +1,4 @@
 import importlib
-import os
 
 import pytest
 
@@ -22,13 +21,3 @@ def test_get_engine_levanta_erro_claro_sem_database_url(monkeypatch):
 
     with pytest.raises(KeyError):
         session_module.get_engine()
-
-    # restaura estado para nao afetar outros testes do processo
-    monkeypatch.setenv(
-        "DATABASE_URL",
-        os.environ.get(
-            "DATABASE_URL",
-            "postgresql+psycopg2://gymtracker:gymtracker@localhost:5432/gymtracker",
-        ),
-    )
-    importlib.reload(session_module)

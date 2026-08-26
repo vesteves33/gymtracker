@@ -74,7 +74,10 @@ def criar_pagina(
         return templates.TemplateResponse(
             request,
             "exercicios/form.html",
-            {"exercicio": ExercicioFormState(nome=nome, tipo=tipo), "erro": "Nome nao pode ser vazio"},
+            {
+                "exercicio": ExercicioFormState(nome=nome, tipo=tipo),
+                "erro": "Nome nao pode ser vazio",
+            },
             status_code=422,
         )
     db.commit()

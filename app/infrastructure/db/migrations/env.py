@@ -6,13 +6,7 @@ from pathlib import Path
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-
-def find_project_root(start: Path) -> Path:
-    for candidate in (start, *start.parents):
-        if (candidate / "pyproject.toml").exists():
-            return candidate
-    raise RuntimeError(f"pyproject.toml nao encontrado a partir de {start}")
-
+from app.infrastructure.db.migrations.paths import find_project_root
 
 sys.path.append(str(find_project_root(Path(__file__).resolve())))
 
@@ -21,15 +15,14 @@ from app.infrastructure.db.session import Base  # noqa: E402
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
-config = context.config if hasattr(context, 'config') else None
+config = context.config
 
 # Interpret the config file for Python logging.
 # This line sets up loggers basically.
-if config is not None and config.config_file_name is not None:
+if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-if config is not None:
-    config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
 
 # add your model's MetaData object here
 # for 'autogenerate' support
@@ -79,16 +72,13 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
 
 
-if config is not None:
-    if context.is_offline_mode():
-        run_migrations_offline()
-    else:
-        run_migrations_online()
+if context.is_offline_mode():
+    run_migrations_offline()
+else:
+    run_migrations_online()
