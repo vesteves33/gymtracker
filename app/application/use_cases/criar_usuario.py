@@ -14,6 +14,10 @@ class UsuarioLoginDuplicadoError(Exception):
     pass
 
 
+class CadastroPublicoDesabilitadoError(Exception):
+    pass
+
+
 class SenhaFracaError(Exception):
     pass
 
@@ -37,6 +41,8 @@ class CriarUsuario:
         self._password_hasher = password_hasher
 
     def executar(self, login: str, senha: str) -> uuid.UUID:
+        if self._usuario_repository.existe_algum_usuario():
+            raise CadastroPublicoDesabilitadoError()
         _validar_senha(senha)
         if self._usuario_repository.get_by_login(login) is not None:
             raise UsuarioLoginDuplicadoError()

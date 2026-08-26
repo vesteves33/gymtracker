@@ -9,6 +9,7 @@ from app.application.use_cases.autenticar_usuario import (
 from app.infrastructure.auth.jwt import JwtTokenGenerator
 from app.infrastructure.auth.password import BcryptPasswordHasher
 from app.infrastructure.db.repositories.usuario_repository import SqlAlchemyUsuarioRepository
+from app.infrastructure.web import rate_limit
 from app.infrastructure.web.csrf import (
     CSRF_COOKIE_NAME,
     copy_set_cookie_headers,
@@ -51,6 +52,16 @@ def autenticar(
     csrf_token_cookie: str | None = Cookie(default=None, alias=CSRF_COOKIE_NAME),
 ):
     verify_csrf_token(csrf_token_cookie, csrf_token)
+
+    chave = f"{request.client.host if request.client else 'unknown'}:{login}"
+    if rate_limit.login_rate_limiter.esta_bloqueado(chave):
+        return templates.TemplateResponse(
+            request,
+            "login.html",
+            {"erro": "Muitas tentativas, tente novamente mais tarde", "csrf_token": csrf_token},
+            status_code=429,
+        )
+
     use_case = AutenticarUsuario(
         usuario_repository=SqlAlchemyUsuarioRepository(db),
         password_hasher=BcryptPasswordHasher(),
@@ -59,6 +70,7 @@ def autenticar(
     try:
         token = use_case.executar(login, senha)
     except CredenciaisInvalidasError:
+        rate_limit.login_rate_limiter.registrar_tentativa(chave)
         return templates.TemplateResponse(
             request,
             "login.html",
@@ -71,7 +83,11 @@ def autenticar(
 
 
 @router.post("/logout")
-def logout():
+def logout(
+    csrf_token: str | None = Form(default=None),
+    csrf_token_cookie: str | None = Cookie(default=None, alias=CSRF_COOKIE_NAME),
+):
+    verify_csrf_token(csrf_token_cookie, csrf_token)
     redirect = RedirectResponse(url="/", status_code=303)
     redirect.delete_cookie("access_token")
     return redirect

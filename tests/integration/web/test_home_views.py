@@ -92,8 +92,46 @@ def test_post_login_sem_csrf_token_retorna_403(db_session, monkeypatch):
 def test_logout_remove_cookie_e_redireciona(db_session, monkeypatch):
     _usar_db_session(monkeypatch, db_session)
 
-    response = client.post("/logout", cookies=_auth_cookies())
+    response = client.post(
+        "/logout",
+        data={"csrf_token": "test-csrf-token"},
+        cookies=_auth_cookies(),
+    )
 
     assert response.status_code == 303
     assert response.headers["location"] == "/"
     assert response.cookies.get("access_token") is None
+
+
+def test_logout_sem_csrf_token_retorna_403(db_session, monkeypatch):
+    _usar_db_session(monkeypatch, db_session)
+
+    response = client.post("/logout", cookies=_auth_cookies())
+
+    assert response.status_code == 403
+
+
+def test_post_login_bloqueado_apos_muitas_tentativas(db_session, monkeypatch):
+    from app.infrastructure.web import rate_limit as rate_limit_module
+
+    _usar_db_session(monkeypatch, db_session)
+    monkeypatch.setattr(
+        rate_limit_module,
+        "login_rate_limiter",
+        rate_limit_module.LoginRateLimiter(max_tentativas=2),
+    )
+
+    for _ in range(2):
+        client.post(
+            "/",
+            data={"login": "inexistente", "senha": "x", "csrf_token": "test-csrf-token"},
+            cookies={"csrf_token": "test-csrf-token"},
+        )
+
+    response = client.post(
+        "/",
+        data={"login": "inexistente", "senha": "x", "csrf_token": "test-csrf-token"},
+        cookies={"csrf_token": "test-csrf-token"},
+    )
+
+    assert response.status_code == 429

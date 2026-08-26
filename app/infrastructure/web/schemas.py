@@ -15,7 +15,7 @@ class LoginResponse(BaseModel):
 
 
 class SignupRequest(BaseModel):
-    login: str = Field(min_length=1, max_length=100)
+    login: str = Field(min_length=1, max_length=50)
     senha: str = Field(max_length=72)
 
 

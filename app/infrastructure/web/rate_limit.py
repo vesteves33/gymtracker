@@ -14,6 +14,12 @@ class LoginRateLimiter:
     def esta_bloqueado(self, chave: str) -> bool:
         agora = time.monotonic()
         limite = agora - self._janela_segundos
-        tentativas = [t for t in self._tentativas[chave] if t > limite]
-        self._tentativas[chave] = tentativas
+        tentativas = [t for t in self._tentativas.get(chave, []) if t > limite]
+        if tentativas:
+            self._tentativas[chave] = tentativas
+        else:
+            self._tentativas.pop(chave, None)
         return len(tentativas) >= self._max_tentativas
+
+
+login_rate_limiter = LoginRateLimiter()

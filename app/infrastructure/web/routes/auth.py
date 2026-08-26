@@ -6,6 +6,7 @@ from app.application.use_cases.autenticar_usuario import (
     CredenciaisInvalidasError,
 )
 from app.application.use_cases.criar_usuario import (
+    CadastroPublicoDesabilitadoError,
     CriarUsuario,
     SenhaFracaError,
     UsuarioLoginDuplicadoError,
@@ -13,8 +14,8 @@ from app.application.use_cases.criar_usuario import (
 from app.infrastructure.auth.jwt import JwtTokenGenerator
 from app.infrastructure.auth.password import BcryptPasswordHasher
 from app.infrastructure.db.repositories.usuario_repository import SqlAlchemyUsuarioRepository
+from app.infrastructure.web import rate_limit
 from app.infrastructure.web.deps import get_db
-from app.infrastructure.web.rate_limit import LoginRateLimiter
 from app.infrastructure.web.schemas import (
     LoginRequest,
     LoginResponse,
@@ -23,7 +24,6 @@ from app.infrastructure.web.schemas import (
 )
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
-_login_rate_limiter = LoginRateLimiter()
 
 
 @router.post("/login", response_model=LoginResponse)
@@ -31,7 +31,7 @@ def login(
     payload: LoginRequest, request: Request, response: Response, db: Session = Depends(get_db)
 ) -> LoginResponse:
     chave = f"{request.client.host if request.client else 'unknown'}:{payload.login}"
-    if _login_rate_limiter.esta_bloqueado(chave):
+    if rate_limit.login_rate_limiter.esta_bloqueado(chave):
         raise HTTPException(status_code=429, detail="Muitas tentativas, tente novamente mais tarde")
 
     use_case = AutenticarUsuario(
@@ -42,7 +42,7 @@ def login(
     try:
         token = use_case.executar(payload.login, payload.senha)
     except CredenciaisInvalidasError as exc:
-        _login_rate_limiter.registrar_tentativa(chave)
+        rate_limit.login_rate_limiter.registrar_tentativa(chave)
         raise HTTPException(status_code=401, detail="Credenciais invalidas") from exc
 
     response.set_cookie("access_token", token, httponly=True)
@@ -67,6 +67,8 @@ def signup(payload: SignupRequest, db: Session = Depends(get_db)) -> SignupRespo
         raise HTTPException(status_code=409, detail="Login ja cadastrado") from exc
     except SenhaFracaError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
+    except CadastroPublicoDesabilitadoError as exc:
+        raise HTTPException(status_code=403, detail="Cadastro publico desabilitado") from exc
 
     db.commit()
     return SignupResponse(id=usuario_id, login=payload.login)

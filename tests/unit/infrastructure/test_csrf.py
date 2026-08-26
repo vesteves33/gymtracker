@@ -20,6 +20,18 @@ def test_verify_rejeita_cookie_ausente():
     assert exc_info.value.status_code == 403
 
 
+def test_verify_rejeita_token_nao_ascii_sem_lancar_type_error():
+    with pytest.raises(HTTPException) as exc_info:
+        verify_csrf_token(csrf_token_cookie="abc123", csrf_token_form="café")
+    assert exc_info.value.status_code == 403
+
+
+def test_verify_rejeita_tokens_nao_ascii_diferentes():
+    with pytest.raises(HTTPException) as exc_info:
+        verify_csrf_token(csrf_token_cookie="café", csrf_token_form="cafè")
+    assert exc_info.value.status_code == 403
+
+
 def test_copy_set_cookie_headers_copia_apenas_set_cookie():
     source = Response()
     source.set_cookie("csrf_token", "abc123")

@@ -31,6 +31,6 @@ def verify_csrf_token(csrf_token_cookie: str | None, csrf_token_form: str | None
     if (
         not csrf_token_cookie
         or not csrf_token_form
-        or not secrets.compare_digest(csrf_token_cookie, csrf_token_form)
+        or not secrets.compare_digest(csrf_token_cookie.encode(), csrf_token_form.encode())
     ):
         raise HTTPException(status_code=403, detail="CSRF invalido")

@@ -9,3 +9,6 @@ class UsuarioRepository(ABC):
 
     @abstractmethod
     def add(self, usuario: Usuario) -> None: ...
+
+    @abstractmethod
+    def existe_algum_usuario(self) -> bool: ...

@@ -24,3 +24,23 @@ def test_janela_expira_e_libera(monkeypatch):
     assert limiter.esta_bloqueado("vitor") is True
     time.sleep(1.1)
     assert limiter.esta_bloqueado("vitor") is False
+
+
+def test_esta_bloqueado_nao_cria_entradas_para_chaves_nunca_registradas():
+    limiter = LoginRateLimiter(max_tentativas=3, janela_segundos=60)
+
+    for i in range(10):
+        assert limiter.esta_bloqueado(f"chave-{i}") is False
+
+    assert limiter._tentativas == {}
+
+
+def test_esta_bloqueado_remove_chave_apos_janela_expirar():
+    limiter = LoginRateLimiter(max_tentativas=1, janela_segundos=1)
+    limiter.registrar_tentativa("vitor")
+    assert "vitor" in limiter._tentativas
+
+    time.sleep(1.1)
+    limiter.esta_bloqueado("vitor")
+
+    assert "vitor" not in limiter._tentativas

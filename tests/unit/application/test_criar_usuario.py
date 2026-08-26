@@ -3,6 +3,7 @@ import uuid
 import pytest
 
 from app.application.use_cases.criar_usuario import (
+    CadastroPublicoDesabilitadoError,
     CriarUsuario,
     SenhaFracaError,
     UsuarioLoginDuplicadoError,
@@ -11,14 +12,22 @@ from app.domain.entities.usuario import Usuario
 
 
 class FakeUsuarioRepository:
-    def __init__(self, usuarios: list[Usuario] | None = None) -> None:
+    def __init__(
+        self, usuarios: list[Usuario] | None = None, existe_algum_usuario: bool | None = None
+    ) -> None:
         self._usuarios = usuarios or []
+        self._existe_algum_usuario_override = existe_algum_usuario
 
     def get_by_login(self, login: str) -> Usuario | None:
         return next((u for u in self._usuarios if u.login == login), None)
 
     def add(self, usuario: Usuario) -> None:
         self._usuarios.append(usuario)
+
+    def existe_algum_usuario(self) -> bool:
+        if self._existe_algum_usuario_override is not None:
+            return self._existe_algum_usuario_override
+        return len(self._usuarios) > 0
 
 
 class FakePasswordHasher:
@@ -27,6 +36,14 @@ class FakePasswordHasher:
 
     def verify(self, senha: str, senha_hash: str) -> bool:
         return senha_hash == f"hash:{senha}"
+
+
+def test_rejeita_cadastro_quando_ja_existe_usuario():
+    repo = FakeUsuarioRepository([Usuario(id=uuid.uuid4(), login="vitor", senha_hash="x")])
+    use_case = CriarUsuario(repo, FakePasswordHasher())
+
+    with pytest.raises(CadastroPublicoDesabilitadoError):
+        use_case.executar("outro_usuario", "Senha123forte")
 
 
 def test_cria_usuario_com_senha_forte():
@@ -40,7 +57,10 @@ def test_cria_usuario_com_senha_forte():
 
 
 def test_rejeita_login_duplicado():
-    repo = FakeUsuarioRepository([Usuario(id=uuid.uuid4(), login="vitor", senha_hash="x")])
+    repo = FakeUsuarioRepository(
+        [Usuario(id=uuid.uuid4(), login="vitor", senha_hash="x")],
+        existe_algum_usuario=False,
+    )
     use_case = CriarUsuario(repo, FakePasswordHasher())
 
     with pytest.raises(UsuarioLoginDuplicadoError):
