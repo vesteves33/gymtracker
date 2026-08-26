@@ -105,3 +105,39 @@ def test_criar_nome_vazio_retorna_422(db_session, monkeypatch):
     )
 
     assert response.status_code == 422
+
+
+def test_criar_exercicio_sem_autenticacao_retorna_401(db_session, monkeypatch):
+    _usar_db_session(monkeypatch, db_session)
+
+    response = client.post("/api/exercicios", json={"nome": "Supino", "tipo": "musculacao"})
+
+    assert response.status_code == 401
+
+
+def test_editar_exercicio_sem_autenticacao_retorna_401(db_session, monkeypatch):
+    _usar_db_session(monkeypatch, db_session)
+
+    response = client.put(
+        f"/api/exercicios/{uuid.uuid4()}", json={"nome": "Supino", "tipo": "musculacao"}
+    )
+
+    assert response.status_code == 401
+
+
+def test_remover_exercicio_sem_autenticacao_retorna_401(db_session, monkeypatch):
+    _usar_db_session(monkeypatch, db_session)
+
+    response = client.delete(f"/api/exercicios/{uuid.uuid4()}")
+
+    assert response.status_code == 401
+
+
+def test_token_com_assinatura_invalida_retorna_401(db_session, monkeypatch):
+    _usar_db_session(monkeypatch, db_session)
+
+    response = client.get(
+        "/api/exercicios", cookies={"access_token": "assinatura.invalida.aqui"}
+    )
+
+    assert response.status_code == 401
