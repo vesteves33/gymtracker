@@ -6,7 +6,9 @@ from pathlib import Path
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-sys.path.append(str(Path(__file__).resolve().parents[4]))
+from app.infrastructure.db.migrations.paths import find_project_root
+
+sys.path.append(str(find_project_root(Path(__file__).resolve())))
 
 from app.infrastructure.db.models import ExercicioModel, UsuarioModel  # noqa: F401,E402
 from app.infrastructure.db.session import Base  # noqa: E402
@@ -70,9 +72,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
