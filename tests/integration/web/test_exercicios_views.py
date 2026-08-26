@@ -19,12 +19,13 @@ def _usar_db_session(monkeypatch, db_session):
     monkeypatch.setattr(deps, "SessionLocal", lambda: db_session)
 
 
-def test_lista_sem_cookie_retorna_401(db_session, monkeypatch):
+def test_lista_sem_cookie_redireciona_para_login(db_session, monkeypatch):
     _usar_db_session(monkeypatch, db_session)
 
     response = client.get("/exercicios")
 
-    assert response.status_code == 401
+    assert response.status_code == 303
+    assert response.headers["location"] == "/"
 
 
 def test_lista_pagina_html(db_session, monkeypatch):
