@@ -66,3 +66,29 @@ def test_editar_para_nome_de_outro_exercicio_falha():
 
     with pytest.raises(ExercicioNomeDuplicadoError):
         use_case.executar(agachamento.id, "supino", TipoExercicio.MUSCULACAO)
+
+
+def test_editar_com_nome_vazio_levanta_value_error():
+    supino = Exercicio(id=uuid.uuid4(), nome="Supino", tipo=TipoExercicio.MUSCULACAO)
+    use_case = EditarExercicio(FakeExercicioRepository([supino]))
+
+    with pytest.raises(ValueError):
+        use_case.executar(supino.id, "   ", TipoExercicio.MUSCULACAO)
+
+
+def test_editar_com_nome_duplicado_de_outro_exercicio_levanta_erro():
+    supino = Exercicio(id=uuid.uuid4(), nome="Supino", tipo=TipoExercicio.MUSCULACAO)
+    agachamento = Exercicio(id=uuid.uuid4(), nome="Agachamento", tipo=TipoExercicio.MUSCULACAO)
+    use_case = EditarExercicio(FakeExercicioRepository([supino, agachamento]))
+
+    with pytest.raises(ExercicioNomeDuplicadoError):
+        use_case.executar(supino.id, "Agachamento", TipoExercicio.MUSCULACAO)
+
+
+def test_editar_mantendo_o_proprio_nome_nao_levanta_duplicado():
+    supino = Exercicio(id=uuid.uuid4(), nome="Supino", tipo=TipoExercicio.MUSCULACAO)
+    use_case = EditarExercicio(FakeExercicioRepository([supino]))
+
+    resultado = use_case.executar(supino.id, "Supino", TipoExercicio.AEROBICO)
+
+    assert resultado.tipo == TipoExercicio.AEROBICO
