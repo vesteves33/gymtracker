@@ -14,7 +14,7 @@ client = TestClient(app, follow_redirects=False)
 def _usar_db_session(monkeypatch, db_session):
     from app.infrastructure.web import deps
 
-    monkeypatch.setattr(deps, "SessionLocal", lambda: db_session)
+    monkeypatch.setattr(deps, "get_session_local", lambda: (lambda: db_session))
 
 
 def _auth_cookies() -> dict[str, str]:

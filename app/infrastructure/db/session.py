@@ -1,6 +1,8 @@
 import os
+from functools import lru_cache
 
 from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
 from sqlalchemy.orm import DeclarativeBase, sessionmaker
 
 
@@ -8,10 +10,11 @@ class Base(DeclarativeBase):
     pass
 
 
-def get_engine():
+@lru_cache
+def get_engine() -> Engine:
     database_url = os.environ["DATABASE_URL"]
     return create_engine(database_url)
 
 
-engine = get_engine()
-SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False)
+def get_session_local() -> sessionmaker:
+    return sessionmaker(bind=get_engine(), autoflush=False, autocommit=False)
