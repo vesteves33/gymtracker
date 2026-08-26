@@ -16,7 +16,7 @@ services:
       - db
     environment:
       DATABASE_URL: postgresql+psycopg2://gymtracker:gymtracker@db:5432/gymtracker
-      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env}
+      JWT_SECRET: ${JWT_SECRET:-changeme}
     ports:
       - "8000:8000"
 

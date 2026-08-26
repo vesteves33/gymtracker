@@ -6,21 +6,6 @@ from fastapi import Cookie, Header, HTTPException
 from app.infrastructure.auth.jwt import JwtTokenGenerator
 
 
-class UsuarioNaoAutenticadoView(Exception):
-    pass
-
-
-def get_current_user_view(
-    access_token: str | None = Cookie(default=None),
-) -> uuid.UUID:
-    if access_token is None:
-        raise UsuarioNaoAutenticadoView()
-    try:
-        return JwtTokenGenerator.decode(access_token)
-    except (jwt.PyJWTError, ValueError, KeyError) as exc:
-        raise UsuarioNaoAutenticadoView() from exc
-
-
 def get_current_user(
     access_token: str | None = Cookie(default=None),
     authorization: str | None = Header(default=None),
