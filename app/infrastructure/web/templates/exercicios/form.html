@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>{% if exercicio %}Editar{% else %}Novo{% endif %} exercicio</h1>
+{% if erro %}<p style="color:red">{{ erro }}</p>{% endif %}
+<form method="post">
+    <label>Nome <input type="text" name="nome" value="{{ exercicio.nome if exercicio else '' }}"></label>
+    <label>Tipo
+        <select name="tipo">
+            <option value="musculacao" {% if exercicio and exercicio.tipo.value == "musculacao" %}selected{% endif %}>Musculacao</option>
+            <option value="aerobico" {% if exercicio and exercicio.tipo.value == "aerobico" %}selected{% endif %}>Aerobico</option>
+        </select>
+    </label>
+    <button type="submit">Salvar</button>
+</form>
+{% endblock %}
