@@ -45,3 +45,26 @@ def test_login_com_senha_maior_que_72_caracteres_retorna_422(db_session, monkeyp
     response = client.post("/api/auth/login", json={"login": "vitor", "senha": "x" * 100})
 
     assert response.status_code == 422
+
+
+def test_logout_remove_cookie_access_token():
+    response = client.post("/api/auth/logout")
+
+    assert response.status_code == 200
+    assert response.json() == {"detail": "ok"}
+    set_cookie = response.headers.get("set-cookie", "")
+    assert "access_token=" in set_cookie
+    assert "Max-Age=0" in set_cookie or "expires=" in set_cookie.lower()
+
+
+def test_apos_logout_cookie_devolvido_nao_autentica_rota_protegida(db_session, monkeypatch):
+    from app.infrastructure.web import deps
+
+    monkeypatch.setattr(deps, "SessionLocal", lambda: db_session)
+
+    logout_response = client.post("/api/auth/logout")
+    cookies_devolvidos = logout_response.cookies
+
+    response = client.get("/api/exercicios", cookies=dict(cookies_devolvidos))
+
+    assert response.status_code == 401

@@ -16,8 +16,6 @@ class SqlAlchemyUsuarioRepository(UsuarioRepository):
         return Usuario(id=model.id, login=model.login, senha_hash=model.senha_hash)
 
     def add(self, usuario: Usuario) -> None:
-        model = UsuarioModel(
-            id=usuario.id, login=usuario.login, senha_hash=usuario.senha_hash
-        )
+        model = UsuarioModel(id=usuario.id, login=usuario.login, senha_hash=usuario.senha_hash)
         self._session.add(model)
         self._session.flush()

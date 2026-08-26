@@ -1,3 +1,4 @@
+import logging
 import uuid
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
@@ -19,6 +20,8 @@ from app.infrastructure.db.repositories.exercicio_repository import (
 from app.infrastructure.web.current_user import get_current_user
 from app.infrastructure.web.deps import get_db
 from app.infrastructure.web.templates import templates
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/exercicios")
 
@@ -69,6 +72,7 @@ def criar_pagina(
             status_code=422,
         )
     db.commit()
+    logger.info("exercicio_criado nome=%s tipo=%s", nome, tipo)
     return RedirectResponse(url="/exercicios", status_code=303)
 
 
@@ -122,6 +126,7 @@ def editar_pagina(
             status_code=422,
         )
     db.commit()
+    logger.info("exercicio_editado id=%s nome=%s", exercicio_id, nome)
     return RedirectResponse(url="/exercicios", status_code=303)
 
 
@@ -136,4 +141,5 @@ def remover_pagina(
     except ExercicioNaoEncontradoError as exc:
         raise HTTPException(status_code=404, detail="Exercicio nao encontrado") from exc
     db.commit()
+    logger.info("exercicio_removido id=%s", exercicio_id)
     return RedirectResponse(url="/exercicios", status_code=303)

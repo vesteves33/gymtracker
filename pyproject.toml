@@ -1,7 +1,7 @@
 [project]
 name = "gymtracker"
 version = "0.1.0"
-description = "Add your description here"
+description = "Sistema pessoal de registro de treinos de musculacao e exercicios aerobicos, com acompanhamento de evolucao"
 requires-python = ">=3.12"
 dependencies = [
     "alembic>=1.19.1",

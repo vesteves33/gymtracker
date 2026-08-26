@@ -1,3 +1,5 @@
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 
@@ -10,6 +12,8 @@ from app.infrastructure.auth.password import BcryptPasswordHasher
 from app.infrastructure.db.repositories.usuario_repository import SqlAlchemyUsuarioRepository
 from app.infrastructure.web.deps import get_db
 from app.infrastructure.web.schemas import LoginRequest, LoginResponse
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -26,8 +30,10 @@ def login(
     try:
         token = use_case.executar(payload.login, payload.senha)
     except CredenciaisInvalidasError as exc:
+        logger.warning("login_falhou login=%s", payload.login)
         raise HTTPException(status_code=401, detail="Credenciais invalidas") from exc
 
+    logger.info("login_sucesso login=%s", payload.login)
     response.set_cookie("access_token", token, httponly=True)
     return LoginResponse(access_token=token)
 

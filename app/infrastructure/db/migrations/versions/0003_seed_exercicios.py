@@ -5,14 +5,15 @@ Revises: 0002
 Create Date: 2026-08-24 00:00:01.000000
 
 """
+
 import uuid
 from typing import Sequence, Union
 
 import sqlalchemy as sa
 from alembic import op
 
-revision: str = '0003'
-down_revision: Union[str, Sequence[str], None] = '0002'
+revision: str = "0003"
+down_revision: Union[str, Sequence[str], None] = "0002"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 

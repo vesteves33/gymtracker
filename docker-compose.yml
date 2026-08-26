@@ -2,21 +2,27 @@ services:
   db:
     image: postgres:16
     environment:
-      POSTGRES_USER: gymtracker
-      POSTGRES_PASSWORD: gymtracker
-      POSTGRES_DB: gymtracker
+      POSTGRES_USER: ${POSTGRES_USER:-gymtracker}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+      POSTGRES_DB: ${POSTGRES_DB:-gymtracker}
     ports:
       - "5432:5432"
     volumes:
       - gymtracker_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-gymtracker}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   app:
     build: .
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     environment:
-      DATABASE_URL: postgresql+psycopg2://gymtracker:gymtracker@db:5432/gymtracker
-      JWT_SECRET: ${JWT_SECRET:-changeme}
+      DATABASE_URL: postgresql+psycopg2://${POSTGRES_USER:-gymtracker}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB:-gymtracker}
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env}
     ports:
       - "8000:8000"
 

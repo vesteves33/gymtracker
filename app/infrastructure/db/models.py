@@ -10,9 +10,7 @@ from app.infrastructure.db.session import Base
 class UsuarioModel(Base):
     __tablename__ = "usuario"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     login: Mapped[str] = mapped_column(String(50), unique=True, nullable=False)
     senha_hash: Mapped[str] = mapped_column(String(255), nullable=False)
 
@@ -20,9 +18,7 @@ class UsuarioModel(Base):
 class ExercicioModel(Base):
     __tablename__ = "exercicio"
 
-    id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
-    )
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
     nome: Mapped[str] = mapped_column(String(100), unique=True, nullable=False)
     tipo: Mapped[str] = mapped_column(String(20), nullable=False)
 
