@@ -151,3 +151,20 @@ def test_editar_exercicio_inexistente_retorna_404(db_session, monkeypatch):
     )
 
     assert response.status_code == 404
+
+
+def test_lista_com_token_expirado_redireciona_para_login(db_session, monkeypatch):
+    import jwt
+    from datetime import datetime, timedelta, timezone
+
+    _usar_db_session(monkeypatch, db_session)
+    payload = {
+        "sub": str(uuid.uuid4()),
+        "exp": datetime.now(timezone.utc) - timedelta(minutes=1),
+    }
+    token_expirado = jwt.encode(payload, "test-secret", algorithm="HS256")
+
+    response = client.get("/exercicios", cookies={"access_token": token_expirado})
+
+    assert response.status_code == 303
+    assert response.headers["location"] == "/"
