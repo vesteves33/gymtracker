@@ -10,7 +10,7 @@ client = TestClient(app, follow_redirects=False)
 
 def _auth_cookies() -> dict[str, str]:
     token = JwtTokenGenerator().generate(uuid.uuid4())
-    return {"access_token": token}
+    return {"access_token": token, "csrf_token": "test-csrf-token"}
 
 
 def _usar_db_session(monkeypatch, db_session):
@@ -43,7 +43,7 @@ def test_criar_via_formulario_redireciona_para_lista(db_session, monkeypatch):
 
     response = client.post(
         "/exercicios/novo",
-        data={"nome": nome, "tipo": "musculacao"},
+        data={"nome": nome, "tipo": "musculacao", "csrf_token": "test-csrf-token"},
         cookies=_auth_cookies(),
     )
 
@@ -51,14 +51,33 @@ def test_criar_via_formulario_redireciona_para_lista(db_session, monkeypatch):
     assert response.headers["location"] == "/exercicios"
 
 
+def test_criar_sem_csrf_token_retorna_403(db_session, monkeypatch):
+    _usar_db_session(monkeypatch, db_session)
+    nome = f"Supino Teste {uuid.uuid4().hex[:8]}"
+
+    response = client.post(
+        "/exercicios/novo",
+        data={"nome": nome, "tipo": "musculacao"},
+        cookies=_auth_cookies(),
+    )
+
+    assert response.status_code == 403
+
+
 def test_criar_nome_duplicado_reexibe_formulario_com_erro(db_session, monkeypatch):
     _usar_db_session(monkeypatch, db_session)
     cookies = _auth_cookies()
     nome = f"Supino Teste {uuid.uuid4().hex[:8]}"
 
-    client.post("/exercicios/novo", data={"nome": nome, "tipo": "musculacao"}, cookies=cookies)
+    client.post(
+        "/exercicios/novo",
+        data={"nome": nome, "tipo": "musculacao", "csrf_token": "test-csrf-token"},
+        cookies=cookies,
+    )
     duplicado = client.post(
-        "/exercicios/novo", data={"nome": nome.upper(), "tipo": "musculacao"}, cookies=cookies
+        "/exercicios/novo",
+        data={"nome": nome.upper(), "tipo": "musculacao", "csrf_token": "test-csrf-token"},
+        cookies=cookies,
     )
 
     assert duplicado.status_code == 409
@@ -79,7 +98,11 @@ def test_remover_via_formulario_redireciona_para_lista(db_session, monkeypatch):
     SqlAlchemyExercicioRepository(db_session).add(exercicio)
     db_session.commit()
 
-    response = client.post(f"/exercicios/{exercicio.id}/remover", cookies=cookies)
+    response = client.post(
+        f"/exercicios/{exercicio.id}/remover",
+        data={"csrf_token": "test-csrf-token"},
+        cookies=cookies,
+    )
 
     assert response.status_code == 303
     assert response.headers["location"] == "/exercicios"

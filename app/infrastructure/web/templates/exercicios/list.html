@@ -19,6 +19,7 @@
             <td>
                 <a href="/exercicios/{{ exercicio.id }}/editar">Editar</a>
                 <form method="post" action="/exercicios/{{ exercicio.id }}/remover" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
                     <button type="submit">Remover</button>
                 </form>
             </td>

@@ -8,6 +8,7 @@
 <h1>{% if exercicio %}Editar{% else %}Novo{% endif %} exercicio</h1>
 {% if erro %}<p style="color:red">{{ erro }}</p>{% endif %}
 <form method="post">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token }}">
     <label>Nome <input type="text" name="nome" value="{{ exercicio.nome if exercicio else '' }}"></label>
     <label>Tipo
         <select name="tipo">

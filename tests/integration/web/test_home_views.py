@@ -19,7 +19,7 @@ def _usar_db_session(monkeypatch, db_session):
 
 def _auth_cookies() -> dict[str, str]:
     token = JwtTokenGenerator().generate(uuid.uuid4())
-    return {"access_token": token}
+    return {"access_token": token, "csrf_token": "test-csrf-token"}
 
 
 def test_home_sem_cookie_mostra_form_login(db_session, monkeypatch):
@@ -57,7 +57,11 @@ def test_post_login_credenciais_validas_redireciona_e_seta_cookie(db_session, mo
     SqlAlchemyUsuarioRepository(db_session).add(usuario)
     db_session.commit()
 
-    response = client.post("/", data={"login": "vitor", "senha": "123456"})
+    response = client.post(
+        "/",
+        data={"login": "vitor", "senha": "123456", "csrf_token": "test-csrf-token"},
+        cookies={"csrf_token": "test-csrf-token"},
+    )
 
     assert response.status_code == 303
     assert response.headers["location"] == "/exercicios"
@@ -67,10 +71,22 @@ def test_post_login_credenciais_validas_redireciona_e_seta_cookie(db_session, mo
 def test_post_login_credenciais_invalidas_reexibe_form_com_erro(db_session, monkeypatch):
     _usar_db_session(monkeypatch, db_session)
 
-    response = client.post("/", data={"login": "inexistente", "senha": "x"})
+    response = client.post(
+        "/",
+        data={"login": "inexistente", "senha": "x", "csrf_token": "test-csrf-token"},
+        cookies={"csrf_token": "test-csrf-token"},
+    )
 
     assert response.status_code == 401
     assert "credenciais" in response.text.lower()
+
+
+def test_post_login_sem_csrf_token_retorna_403(db_session, monkeypatch):
+    _usar_db_session(monkeypatch, db_session)
+
+    response = client.post("/", data={"login": "vitor", "senha": "123456"})
+
+    assert response.status_code == 403
 
 
 def test_logout_remove_cookie_e_redireciona(db_session, monkeypatch):
