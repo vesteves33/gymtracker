@@ -21,6 +21,3 @@ class SqlAlchemyUsuarioRepository(UsuarioRepository):
         )
         self._session.add(model)
         self._session.flush()
-
-    def existe_algum_usuario(self) -> bool:
-        return self._session.query(UsuarioModel).first() is not None

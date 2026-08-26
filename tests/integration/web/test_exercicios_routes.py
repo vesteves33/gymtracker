@@ -16,7 +16,7 @@ def _auth_headers() -> dict[str, str]:
 def _usar_db_session(monkeypatch, db_session):
     from app.infrastructure.web import deps
 
-    monkeypatch.setattr(deps, "get_session_local", lambda: (lambda: db_session))
+    monkeypatch.setattr(deps, "SessionLocal", lambda: db_session)
 
 
 def test_listar_sem_token_retorna_401(db_session, monkeypatch):

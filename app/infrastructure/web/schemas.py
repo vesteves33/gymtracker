@@ -14,16 +14,6 @@ class LoginResponse(BaseModel):
     access_token: str
 
 
-class SignupRequest(BaseModel):
-    login: str = Field(min_length=1, max_length=50)
-    senha: str = Field(max_length=72)
-
-
-class SignupResponse(BaseModel):
-    id: uuid.UUID
-    login: str
-
-
 class ExercicioCreate(BaseModel):
     nome: str = Field(min_length=1, max_length=100)
     tipo: TipoExercicio

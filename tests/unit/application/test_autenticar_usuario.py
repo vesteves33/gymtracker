@@ -22,9 +22,6 @@ class FakeUsuarioRepository(UsuarioRepository):
     def add(self, usuario: Usuario) -> None:
         self._usuarios[usuario.login] = usuario
 
-    def existe_algum_usuario(self) -> bool:
-        return len(self._usuarios) > 0
-
 
 class FakePasswordHasher(PasswordHasher):
     def hash(self, senha: str) -> str:
