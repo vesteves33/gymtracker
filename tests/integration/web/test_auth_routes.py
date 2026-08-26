@@ -62,3 +62,45 @@ def test_login_bloqueado_apos_muitas_tentativas(db_session, monkeypatch):
     response = client.post("/api/auth/login", json={"login": "inexistente", "senha": "x"})
 
     assert response.status_code == 429
+
+
+def test_signup_com_senha_forte_cria_usuario_e_permite_login(db_session, monkeypatch):
+    from app.infrastructure.web import deps
+
+    monkeypatch.setattr(deps, "get_session_local", lambda: (lambda: db_session))
+    login_unico = f"usuario_{uuid.uuid4().hex[:8]}"
+
+    signup_response = client.post(
+        "/api/auth/signup", json={"login": login_unico, "senha": "Senha123forte"}
+    )
+    assert signup_response.status_code == 201
+
+    login_response = client.post(
+        "/api/auth/login", json={"login": login_unico, "senha": "Senha123forte"}
+    )
+    assert login_response.status_code == 200
+
+
+def test_signup_com_login_duplicado_retorna_409(db_session, monkeypatch):
+    from app.infrastructure.web import deps
+
+    monkeypatch.setattr(deps, "get_session_local", lambda: (lambda: db_session))
+    login_unico = f"usuario_{uuid.uuid4().hex[:8]}"
+
+    client.post("/api/auth/signup", json={"login": login_unico, "senha": "Senha123forte"})
+    duplicado = client.post(
+        "/api/auth/signup", json={"login": login_unico, "senha": "OutraSenha456"}
+    )
+
+    assert duplicado.status_code == 409
+
+
+def test_signup_com_senha_fraca_retorna_422(db_session, monkeypatch):
+    from app.infrastructure.web import deps
+
+    monkeypatch.setattr(deps, "get_session_local", lambda: (lambda: db_session))
+    login_unico = f"usuario_{uuid.uuid4().hex[:8]}"
+
+    response = client.post("/api/auth/signup", json={"login": login_unico, "senha": "curta1"})
+
+    assert response.status_code == 422
