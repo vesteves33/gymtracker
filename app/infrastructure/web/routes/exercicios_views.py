@@ -1,4 +1,5 @@
 import uuid
+from dataclasses import dataclass
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request
 from fastapi.responses import RedirectResponse
@@ -19,6 +20,14 @@ from app.infrastructure.db.repositories.exercicio_repository import (
 from app.infrastructure.web.current_user import get_current_user_view
 from app.infrastructure.web.deps import get_db
 from app.infrastructure.web.templates import templates
+
+
+@dataclass
+class ExercicioFormState:
+    nome: str
+    tipo: TipoExercicio
+    id: uuid.UUID | None = None
+
 
 router = APIRouter(prefix="/exercicios")
 
@@ -58,14 +67,14 @@ def criar_pagina(
         return templates.TemplateResponse(
             request,
             "exercicios/form.html",
-            {"exercicio": {"nome": nome, "tipo": tipo}, "erro": "Nome ja cadastrado"},
+            {"exercicio": ExercicioFormState(nome=nome, tipo=tipo), "erro": "Nome ja cadastrado"},
             status_code=409,
         )
     except ValueError:
         return templates.TemplateResponse(
             request,
             "exercicios/form.html",
-            {"exercicio": {"nome": nome, "tipo": tipo}, "erro": "Nome nao pode ser vazio"},
+            {"exercicio": ExercicioFormState(nome=nome, tipo=tipo), "erro": "Nome nao pode ser vazio"},
             status_code=422,
         )
     db.commit()
@@ -106,7 +115,7 @@ def editar_pagina(
             request,
             "exercicios/form.html",
             {
-                "exercicio": {"id": exercicio_id, "nome": nome, "tipo": tipo},
+                "exercicio": ExercicioFormState(id=exercicio_id, nome=nome, tipo=tipo),
                 "erro": "Nome ja cadastrado",
             },
             status_code=409,
@@ -116,7 +125,7 @@ def editar_pagina(
             request,
             "exercicios/form.html",
             {
-                "exercicio": {"id": exercicio_id, "nome": nome, "tipo": tipo},
+                "exercicio": ExercicioFormState(id=exercicio_id, nome=nome, tipo=tipo),
                 "erro": "Nome nao pode ser vazio",
             },
             status_code=422,
