@@ -1,3 +1,4 @@
+from app.infrastructure.logging_config import configure_logging
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 
@@ -6,6 +7,8 @@ from app.infrastructure.web.routes.auth import router as auth_router
 from app.infrastructure.web.routes.exercicios import router as exercicios_router
 from app.infrastructure.web.routes.exercicios_views import router as exercicios_views_router
 from app.infrastructure.web.routes.home_views import router as home_views_router
+
+configure_logging()
 
 app = FastAPI(title="GymTracker")
 
