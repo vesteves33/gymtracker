@@ -1,3 +1,4 @@
+import re
 import uuid
 
 from fastapi.testclient import TestClient
@@ -49,6 +50,40 @@ def test_criar_via_formulario_redireciona_para_lista(db_session, monkeypatch):
 
     assert response.status_code == 303
     assert response.headers["location"] == "/exercicios"
+
+
+def test_ciclo_completo_csrf_cookie_emitido_e_valido_no_post(db_session, monkeypatch):
+    """Exercita o fluxo real: GET emite o cookie, o valor emitido e reaproveitado no POST.
+
+    Ao contrario dos demais testes (que usam um valor de csrf_token hardcoded tanto no
+    cookie quanto no form, sem nunca passar pelo GET), este teste cobre o caminho real de
+    emissao do cookie via `ensure_csrf_cookie` + `copy_set_cookie_headers`, garantindo que
+    o cookie realmente chega ao cliente e que seu valor bate com o token renderizado no
+    HTML.
+    """
+    _usar_db_session(monkeypatch, db_session)
+    access_token = JwtTokenGenerator().generate(uuid.uuid4())
+    nome = f"Supino Teste {uuid.uuid4().hex[:8]}"
+
+    get_response = client.get("/exercicios/novo", cookies={"access_token": access_token})
+
+    assert get_response.status_code == 200
+    csrf_cookie_value = get_response.cookies.get("csrf_token")
+    assert csrf_cookie_value
+
+    match = re.search(r'name="csrf_token" value="([^"]*)"', get_response.text)
+    assert match is not None
+    csrf_form_value = match.group(1)
+    assert csrf_form_value == csrf_cookie_value
+
+    post_response = client.post(
+        "/exercicios/novo",
+        data={"nome": nome, "tipo": "musculacao", "csrf_token": csrf_form_value},
+        cookies={"access_token": access_token, "csrf_token": csrf_cookie_value},
+    )
+
+    assert post_response.status_code == 303
+    assert post_response.headers["location"] == "/exercicios"
 
 
 def test_criar_sem_csrf_token_retorna_403(db_session, monkeypatch):
