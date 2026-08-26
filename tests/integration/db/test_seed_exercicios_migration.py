@@ -37,9 +37,7 @@ def test_seed_da_migration_0003_esta_presente_no_banco(db_session):
         )
     db_session.commit()
 
-    nomes_no_banco = {
-        model.nome for model in db_session.execute(select(ExercicioModel)).scalars()
-    }
+    nomes_no_banco = {model.nome for model in db_session.execute(select(ExercicioModel)).scalars()}
 
     for nome, _tipo in modulo.EXERCICIOS_SEED:
         assert nome in nomes_no_banco

@@ -1,7 +1,7 @@
-from app.infrastructure.logging_config import configure_logging
 from fastapi import FastAPI, Request
 from fastapi.responses import RedirectResponse
 
+from app.infrastructure.logging_config import configure_logging
 from app.infrastructure.web.current_user import UsuarioNaoAutenticadoView
 from app.infrastructure.web.routes.auth import router as auth_router
 from app.infrastructure.web.routes.exercicios import router as exercicios_router

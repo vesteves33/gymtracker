@@ -136,8 +136,6 @@ def test_remover_exercicio_sem_autenticacao_retorna_401(db_session, monkeypatch)
 def test_token_com_assinatura_invalida_retorna_401(db_session, monkeypatch):
     _usar_db_session(monkeypatch, db_session)
 
-    response = client.get(
-        "/api/exercicios", cookies={"access_token": "assinatura.invalida.aqui"}
-    )
+    response = client.get("/api/exercicios", cookies={"access_token": "assinatura.invalida.aqui"})
 
     assert response.status_code == 401

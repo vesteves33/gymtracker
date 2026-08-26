@@ -154,8 +154,9 @@ def test_editar_exercicio_inexistente_retorna_404(db_session, monkeypatch):
 
 
 def test_lista_com_token_expirado_redireciona_para_login(db_session, monkeypatch):
-    import jwt
     from datetime import datetime, timedelta, timezone
+
+    import jwt
 
     _usar_db_session(monkeypatch, db_session)
     payload = {
