@@ -4,7 +4,7 @@ os.environ.setdefault(
     "DATABASE_URL",
     "postgresql+psycopg2://gymtracker:gymtracker@localhost:5432/gymtracker",
 )
-os.environ.setdefault("JWT_SECRET", "test-secret")
+os.environ.setdefault("JWT_SECRET", "test-secret-with-at-least-32-characters")
 
 import pytest
 from sqlalchemy.orm import Session
