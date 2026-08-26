@@ -45,3 +45,20 @@ def test_login_com_senha_maior_que_72_caracteres_retorna_422(db_session, monkeyp
     response = client.post("/api/auth/login", json={"login": "vitor", "senha": "x" * 100})
 
     assert response.status_code == 422
+
+
+def test_login_bloqueado_apos_muitas_tentativas(db_session, monkeypatch):
+    from app.infrastructure.web import deps
+    from app.infrastructure.web.routes import auth as auth_module
+
+    monkeypatch.setattr(deps, "get_session_local", lambda: (lambda: db_session))
+    monkeypatch.setattr(
+        auth_module, "_login_rate_limiter", auth_module.LoginRateLimiter(max_tentativas=2)
+    )
+
+    for _ in range(2):
+        client.post("/api/auth/login", json={"login": "inexistente", "senha": "x"})
+
+    response = client.post("/api/auth/login", json={"login": "inexistente", "senha": "x"})
+
+    assert response.status_code == 429
